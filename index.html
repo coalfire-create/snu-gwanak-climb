@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>관악산 632m — 서울대학교까지 오르는 길</title>
+    <meta name="description" content="서울대학교 정문에서 관악산 정상까지, 실제 지형 위를 스크롤로 올라보세요." />
+    <meta name="theme-color" content="#070a1c" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://snu-gwanak-climb.vercel.app/" />
+    <meta property="og:title" content="관악산 632m — 서울대학교까지 오르는 길" />
+    <meta property="og:description" content="서울대학교 정문에서 관악산 정상까지, 실제 지형 위를 스크롤로 올라보세요." />
+    <meta property="og:image" content="https://snu-gwanak-climb.vercel.app/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <canvas id="gl"></canvas>
+
+    <div class="loader" id="loader">
+      <span class="loader__label">관악산 등반 준비 중</span>
+      <span class="loader__alt"><span id="loaderAlt">0</span><small>m</small></span>
+    </div>
+
+    <header class="nav">
+      <span class="nav__logo">SNU <em>관악</em></span>
+      <a href="https://admission.snu.ac.kr" target="_blank" rel="noopener" class="nav__cta">입학 안내 ↗</a>
+    </header>
+
+    <!-- Heads-up display: the climb in numbers -->
+    <aside class="hud" id="hud" aria-hidden="true">
+      <div class="hud__alt">
+        <span class="hud__label">해발 ALT</span>
+        <span class="hud__value"><span id="altValue">69</span><small>m</small></span>
+      </div>
+      <div class="gauge">
+        <span class="gauge__fill" id="gaugeFill"></span>
+        <span class="gauge__tick" style="bottom: 0">0</span>
+        <span class="gauge__tick" style="bottom: 31.6%">200</span>
+        <span class="gauge__tick" style="bottom: 63.3%">400</span>
+        <span class="gauge__tick gauge__tick--top" style="bottom: 100%">632</span>
+      </div>
+      <div class="hud__dist">
+        <span class="hud__label">거리</span>
+        <span class="hud__small"><span id="distValue">0.0</span> / <span id="distTotal">3.5</span> km</span>
+      </div>
+    </aside>
+
+    <div class="tags" id="tags" aria-hidden="true"></div>
+
+    <!-- Story along the climb; each card shows within its [from, to] scroll range -->
+    <div class="stages">
+      <section class="stage stage--hero" data-from="0" data-to="0.045">
+        <span class="eyebrow">SEOUL NATIONAL UNIVERSITY · 관악캠퍼스</span>
+        <h1 class="hero__title">정상까지,<br />3.5km.</h1>
+        <p class="hero__sub">서울대학교 정문에서 관악산 정상까지.<br />실제 지형 위를, 스크롤로 한 걸음씩 올라가 보세요.</p>
+        <span class="hero__hint">SCROLL TO CLIMB ↓</span>
+      </section>
+
+      <section class="stage" data-from="0.07" data-to="0.17">
+        <span class="stage__alt">정문 · 해발 69m</span>
+        <h2 class="stage__title">‘샤’를 지나면<br />등반이 시작됩니다.</h2>
+        <p class="stage__body">서울대학교 정문. 관악산 아래 가장 큰 교실의 입구입니다.</p>
+      </section>
+
+      <section class="stage" data-from="0.2" data-to="0.33">
+        <span class="stage__alt">1975</span>
+        <h2 class="stage__title">흩어져 있던 대학이<br />관악으로 모였습니다.</h2>
+        <p class="stage__body">서울 곳곳에 나뉘어 있던 단과대학들은 1975년, 이 산자락 아래 하나의 캠퍼스로 모였습니다.</p>
+      </section>
+
+      <section class="stage" data-from="0.37" data-to="0.5">
+        <span class="stage__alt">캠퍼스 남쪽 끝</span>
+        <h2 class="stage__title">캠퍼스의 끝이<br />곧 등산로의 시작.</h2>
+        <p class="stage__body">강의실을 나서면 바로 산길. 관악캠퍼스는 관악산과 맞닿아 있습니다.</p>
+      </section>
+
+      <section class="stage" data-from="0.55" data-to="0.67">
+        <span class="stage__alt">능선</span>
+        <h2 class="stage__title">숨이 찰수록,<br />시야는 넓어집니다.</h2>
+      </section>
+
+      <section class="stage" data-from="0.7" data-to="0.82">
+        <span class="stage__alt">자운암 국기봉 · 482m</span>
+        <h2 class="stage__title">정상까지<br />얼마 남지 않았습니다.</h2>
+      </section>
+
+      <section class="stage stage--summit" data-from="0.86" data-to="0.935">
+        <span class="stage__alt">관악산 정상 · 연주대</span>
+        <h2 class="summit__title">해발 632m.</h2>
+      </section>
+
+      <section class="stage stage--cta" data-from="0.95" data-to="1.01">
+        <p class="cta__lead">발아래 펼쳐진 저 불빛이, 서울대학교입니다.</p>
+        <h2 class="cta__title">여러분도,<br />이 학교에 입학하고<br />싶지 않으신가요?</h2>
+        <div class="cta__actions">
+          <a href="https://admission.snu.ac.kr" target="_blank" rel="noopener" class="btn btn--sun">입학 안내 보기 →</a>
+          <a href="#top" class="btn btn--line" id="climbAgain">다시 오르기 ↑</a>
+        </div>
+      </section>
+    </div>
+
+    <main class="track" id="track"></main>
+
+    <footer class="credit">
+      지형: AWS Terrain Tiles · 지도: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors
+    </footer>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
