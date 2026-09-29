@@ -174,7 +174,9 @@ export class Climb {
     this.#buildTrail()
     this.#buildPost()
     this.resize()
-    window.addEventListener('resize', () => this.resize())
+    // Ignore height-only resizes (mobile address bar); the canvas is 100lvh.
+    let w = innerWidth
+    window.addEventListener('resize', () => innerWidth !== w && ((w = innerWidth), this.resize()))
   }
 
   async #loadHeight() {

@@ -20,6 +20,7 @@ async function boot() {
     tween,
   ])
 
+  if (import.meta.env.DEV) window.__climb = climb
   const lenis = new Lenis({ lerp: 0.08, wheelMultiplier: 0.8 })
   gsap.ticker.add((t) => lenis.raf(t * 1000))
   gsap.ticker.lagSmoothing(0)
@@ -65,13 +66,21 @@ async function boot() {
   const trackEl = document.getElementById('track')
   const summitTrailElev = DATA.trail[DATA.trail.length - 1][1]
 
+  // Mobile browsers change innerHeight as the address bar slides; only take a
+  // new viewport height when the width changes (rotation, real resize).
+  let viewH = innerHeight
+  let viewW = innerWidth
+  addEventListener('resize', () => {
+    if (innerWidth !== viewW) (viewW = innerWidth), (viewH = innerHeight)
+  })
+
   let last = performance.now()
   gsap.ticker.add(() => {
     const now = performance.now()
     const dt = Math.min((now - last) / 1000, 0.05)
     last = now
 
-    const max = trackEl.offsetHeight - innerHeight
+    const max = trackEl.offsetHeight - viewH
     const p = clamp01(scrollY / max)
     climb.progress = p
     climb.render(dt)
@@ -97,28 +106,34 @@ async function boot() {
 
     // Peaks always; campus building names only while we're down among them
     // or looking back over them from the top. Overlapping tags are skipped.
+    // Labels already on screen keep their spot (placed first), and every
+    // label fades in and out instead of popping, so they don't flicker as
+    // the camera moves.
     const placed = []
     const shown = new Set()
     const place = (item, visible, opacity) => {
       const sc = visible && climb.screen(item.pos)
       let ok = !!sc && sc.x > 0 && sc.x < innerWidth && sc.y > 70 && sc.y < innerHeight
-      let box
       if (ok) {
-        const w = item.el.offsetWidth
-        const h = item.el.offsetHeight
-        box = { l: sc.x - w / 2 - 4, r: sc.x + w / 2 + 4, t: sc.y - h - 2, b: sc.y + 2 }
+        const w = item.w ?? (item.w = item.el.offsetWidth)
+        const h = item.h ?? (item.h = item.el.offsetHeight)
+        const box = { l: sc.x - w / 2 - 4, r: sc.x + w / 2 + 4, t: sc.y - h - 2, b: sc.y + 2 }
         ok = !placed.some((q) => box.l < q.r && box.r > q.l && box.t < q.b && box.b > q.t) && !shown.has(item.el.textContent)
+        if (ok) placed.push(box), shown.add(item.el.textContent)
       }
-      item.el.style.visibility = ok ? 'visible' : 'hidden'
-      if (!ok) return
-      placed.push(box)
-      shown.add(item.el.textContent)
-      item.el.style.opacity = opacity
-      item.el.style.transform = `translate(${sc.x}px, ${sc.y}px) translate(-50%, -100%)`
+      // A label must stay clear for 0.2 s before appearing (no flicker in gaps).
+      item.clear = ok ? (item.clear ?? 0) + dt : 0
+      item.on = ok && (item.on || item.clear > 0.2)
+      const target = item.on ? opacity : 0
+      item.a = (item.a ?? 0) + (target - (item.a ?? 0)) * Math.min(1, dt * 8)
+      item.el.style.visibility = item.a > 0.02 ? 'visible' : 'hidden'
+      item.el.style.opacity = item.a
+      if (sc) item.el.style.transform = `translate(${sc.x}px, ${sc.y}px) translate(-50%, -100%)`
     }
-    peaks.forEach((pk) => place(pk, p > 0.02 && p < 0.95, 1))
     const near = Math.max(clamp01(1 - (p - 0.3) / 0.08), clamp01((p - 0.9) / 0.04) * (p < 0.95 ? 1 : 0))
-    buildings.forEach((b) => place(b, near > 0.05, near))
+    const all = [...peaks.map((it) => [it, p > 0.02 && p < 0.95, 1]), ...buildings.map((it) => [it, near > 0.05, near])]
+    all.sort((x, y) => (y[0].on ? 1 : 0) - (x[0].on ? 1 : 0))
+    for (const [it, vis, op] of all) place(it, vis, op)
   })
 }
 
